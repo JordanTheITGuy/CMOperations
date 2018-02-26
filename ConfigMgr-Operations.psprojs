@@ -1,0 +1,9 @@
+﻿<ProjectState>
+  <Version>1.0</Version>
+  <FileID>8911e550-c0cb-4542-a5c9-07915bdfa47a</FileID>
+  <OpenFiles>
+  	<File>Test-Module.ps1</File>
+	<File>ConfigMgr-Operations.psd1</File>
+    <File>ConfigMgr-Operations.psm1</File>
+  </OpenFiles>
+</ProjectState>
