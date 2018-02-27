@@ -111,7 +111,7 @@ function Get-LastHardwareScan
 			try
 			{
 				Write-Verbose -Message "Attempting to connect and retrieve the instance for Hardware Inventory Information"
-				$obj = Get-WmiObject -computername $ComputerName -Namespace "root\ccm\invagt" -Class InventoryActionStatus -ErrorAction Stop | Where-Object { $_.InventoryActionID -eq "{00000000-0000-0000-0000-000000000001}" } | select PsComputerName, LastCycleStartedDate, LastReportDate
+				$obj = Get-WmiObject -Namespace "root\ccm\invagt" -Class InventoryActionStatus -ErrorAction Stop | Where-Object { $_.InventoryActionID -eq "{00000000-0000-0000-0000-000000000001}" } | select PsComputerName, LastCycleStartedDate, LastReportDate
 				Write-Verbose -Message "Retrieved WMI Instance for Hardware Scan Information"
 				$LastHWRun = $ComputerName + " last attempted Hardware inventory on " + [Management.ManagementDateTimeConverter]::ToDateTime($obj.LastCycleStartedDate)
 				Write-Host $LastHWRun
@@ -131,7 +131,7 @@ function Get-LastHardwareScan
 		try
 		{
 			Write-Verbose -Message "Attempting to connect and retrieve the instance for Hardware Inventory Information"
-			$obj = Get-WmiObject -ComputerName $ComputerName -Namespace "root\ccm\invagt" -Class InventoryActionStatus -ErrorAction Stop | Where-Object { $_.InventoryActionID -eq "{00000000-0000-0000-0000-000000000001}" } | select PsComputerName, LastCycleStartedDate, LastReportDate
+			$obj = Get-WmiObject -Namespace "root\ccm\invagt" -Class InventoryActionStatus -ErrorAction Stop | Where-Object { $_.InventoryActionID -eq "{00000000-0000-0000-0000-000000000001}" } | select PsComputerName, LastCycleStartedDate, LastReportDate
 			Write-Verbose -Message "Retrieved WMI Instance for Hardware Scan Information"
 			$LastHWRun = $ComputerName + " last attempted Hardware inventory on " + [Management.ManagementDateTimeConverter]::ToDateTime($obj.LastCycleStartedDate)
 			Write-Host $LastHWRun
