@@ -142,6 +142,116 @@ function Get-LastHardwareScan
 		}
 	}
 }
+
+function Get-UpdatesInSoftwareCenter
+{
+	[CmdletBinding()]
+	param
+	(
+		[parameter(Mandatory = $true)]
+		[string]$ComputerName,
+		[Parameter(Mandatory = $False)]
+		[switch]$ConnectionTest
+		
+	)
+	If ($ConnectionTest)
+	{
+		If (Test-Connectivity -ComputerName $ComputerName)
+		{
+			try
+			{
+				Write-Verbose "Connecting to $ComputerName to query for updates in Software Center"
+				Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false | ft ArticleID, Name -AutoSize
+			}
+			catch
+			{
+				Throw "Error with returning any data from $ComputerName"	
+			}
+		}
+	}
+	else
+	{
+		Write-Verbose "Connecting to $ComputerName to query for updates in Software Center"
+		Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false | ft ArticleID, Name -AutoSize
+	}
+}
+
+function Install-UpdatesInSoftwareCenter
+{
+	param (
+		[Parameter(Mandatory = $true)]
+		[String]$ComputerName,
+		[Parameter(Mandatory = $false)]
+		[switch]$AllUpdates,
+		[Parameter(Mandatory = $false)]
+		[array]$ArticleID,
+		[Parameter(Mandatory = $False)]
+		[switch]$ConnectionTest
+	)
+	If ($ConnectionTest)
+	{
+		If (Test-Connectivity -ComputerName $ComputerName)
+		{
+			if ($AllUpdates)
+			{
+				try
+				{
+					Write-Verbose "All Updates was selected for $ComputerName attempting to install all available updates in software center"
+					$Updates = [System.Management.ManagementObject[]](Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false)
+					([wmiclass]"\\$ComputerName\ROOT\ccm\ClientSDK:CCM_SoftwareUpdatesManager").InstallUpdates([System.Management.ManagementObject[]]$Updates) | Out-Null
+				}
+				catch
+				{
+					throw "Remote installation of updates failed."	
+				}
+			}
+			ElseIf ($ArticleID)
+			{
+				try
+				{
+					Write-Verbose "$ArticleID were selected for $ComputerName attempting to install updates"
+					$Updates = [System.Management.ManagementObject[]](Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false) | Where-Object { $_.ArticleID -in $ArticleID }
+					([wmiclass]"\\$ComputerName\ROOT\ccm\ClientSDK:CCM_SoftwareUpdatesManager").InstallUpdates([System.Management.ManagementObject[]]$Updates) | Out-Null
+				}
+				catch
+				{
+					throw "Remote installation of updates failed"	
+				}
+			}
+		}
+		
+	}
+	else
+	{
+		if ($AllUpdates)
+		{
+			try
+			{
+				Write-Verbose "All Updates was selected for $ComputerName attempting to install all available updates in software center"
+				$Updates = [System.Management.ManagementObject[]](Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false)
+				([wmiclass]"\\$ComputerName\ROOT\ccm\ClientSDK:CCM_SoftwareUpdatesManager").InstallUpdates([System.Management.ManagementObject[]]$Updates) | Out-Null
+			}
+			catch
+			{
+				throw "Remote installation of updates failed."
+			}
+		}
+		ElseIf ($ArticleID)
+		{
+			try
+			{
+				Write-Verbose "$ArticleID were selected for $ComputerName attempting to install updates"
+				$Updates = [System.Management.ManagementObject[]](Get-WmiObject -ComputerName $ComputerName -Query 'SELECT * FROM CCM_SoftwareUpdate' -Namespace ROOT\ccm\ClientSDK -Verbose:$false) | Where-Object { $_.ArticleID -in $ArticleID }
+				([wmiclass]"\\$ComputerName\ROOT\ccm\ClientSDK:CCM_SoftwareUpdatesManager").InstallUpdates([System.Management.ManagementObject[]]$Updates) | Out-Null
+			}
+			catch
+			{
+				throw "Remote installation of updates failed"
+			}
+		}
+	}
+}
+
 ############################################
 function Test-Connectivity
 #Test Connection function. All network tests should be added to this for a full connection test. Returns true or false.
@@ -157,6 +267,7 @@ function Test-Connectivity
 		Test-Ping -ComputerName $ComputerName -ErrorAction Stop
 		Test-AdminShare -ComputerName $ComputerName -ErrorAction Stop
 		Test-WinRM -ComputerName $ComputerName -ErrorAction Stop
+		Write-Verbose -Message "$ComputerName has passed all connection tests"
 		return $true
 	}
 	CATCH
