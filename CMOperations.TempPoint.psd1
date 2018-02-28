@@ -2,12 +2,13 @@
 	===========================================================================
 	 Created with: 	SAPIEN Technologies, Inc., PowerShell Studio 2017 v5.4.144
 	 Created on:   	2/23/2018 11:13 AM
-	 Created by:   	Jordan Benzing
-	 Filename:     	CMOperations.psd1
+	 Created by:   	jorda
+	 Organization: 	
+	 Filename:     	ConfigMgr-Operations.psd1
 	 -------------------------------------------------------------------------
 	 Module Manifest
 	-------------------------------------------------------------------------
-	 Module Name: CMOperations
+	 Module Name: ConfigMgr-Operations
 	===========================================================================
 #>
 
@@ -15,25 +16,28 @@
 @{
 	
 	# Script module or binary module file associated with this manifest
-	ModuleToProcess = 'CMOperations.psm1'
+	ModuleToProcess = 'ConfigMgr-Operations.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0.4'
+	ModuleVersion = '1.0.0.0'
 	
 	# ID used to uniquely identify this module
 	GUID = '8911e550-c0cb-4542-a5c9-07915bdfa47a'
 	
 	# Author of this module
-	Author = 'Jordan Benzing'
+	Author = 'jorda'
+	
+	# Company or vendor of this module
+	CompanyName = ''
 	
 	# Copyright statement for this module
 	Copyright = '(c) 2018. All rights reserved.'
 	
 	# Description of the functionality provided by this module
-	Description = 'Powershell Module for Configuration Manager Operations tasks.'
+	Description = 'Module description'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
-	PowerShellVersion = '4.0'
+	PowerShellVersion = '2.0'
 	
 	# Name of the Windows PowerShell host required by this module
 	PowerShellHostName = ''
@@ -72,7 +76,7 @@
 	NestedModules = @()
 	
 	# Functions to export from this module
-	FunctionsToExport = 'Start-SoftwareUpdateScan, Start-HardwareInventoryScan, Get-LastHardwareScan, Get-UpdatesInSoftwareCenter,Install-UpdatesInSoftwareCenter,Get-NextAvailableMW,Get-LastSoftwareUpdateScan' #For performanace, list functions explicity
+	FunctionsToExport = '*' #For performanace, list functions explicity
 	
 	# Cmdlets to export from this module
 	CmdletsToExport = '*' 

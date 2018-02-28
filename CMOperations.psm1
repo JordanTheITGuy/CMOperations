@@ -10,8 +10,6 @@
 	===========================================================================
 #>
 
-
-
 function Start-SoftwareUpdateScan
 {
 	[CmdletBinding()]
@@ -251,6 +249,193 @@ function Install-UpdatesInSoftwareCenter
 		}
 	}
 }
+
+function Get-NextAvailableMW
+{
+	[CmdletBinding()]
+	param
+	(
+		[parameter(Mandatory = $true)]
+		[string]$ComputerName,
+		[Parameter(Mandatory = $False)]
+		[switch]$ConnectionTest,
+		[Parameter(Mandatory = $False)]
+		[switch]$SoftwareMW,
+		[Parameter(Mandatory = $False)]
+		[switch]$AllProgramsMW,
+		[Parameter(Mandatory = $False)]
+		[switch]$ProgramsMW
+		
+		
+	)
+	if ($ConnectionTest)
+	{
+		if (Test-Connectivity -ComputerName $ComputerName)
+		{
+			if ($AllProgramsMW)
+			{
+				try
+				{
+					Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available ALL PROGRAMS MAINTENANCE WINDOW"
+					$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 1 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+					$Message = "Next available ALL PROGRAMS window for $ComputerName is " + $Window
+					$Message
+				}
+				catch
+				{
+					throw "An Error has occured retriving window information"
+				}
+			}
+			if($SoftwareMW)
+			{
+				try
+				{
+					Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available SOFTWARE UPDATES MAINTENANCE WINDOW"
+					$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 4 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+					$Message = "Next available SOFTWARE UPDATES MAINTENANCE window for $ComputerName is " + $Window
+					$Message
+				}
+				catch
+				{
+					throw "An Error has occured retriving window information"
+				}
+			}
+			if ($ProgramsMW)
+			{
+				try
+				{
+					Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available PROGRAMS MAINTENANCE WINDOW"
+					$window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 2 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+					$Message = "Next available PROGRAMS MAINTENANCE window for $ComputerName is " + $Window
+					$Message
+				}
+				catch
+				{
+					throw "An Error has occured retriving window information"
+				}
+			}
+			if($SoftwareMW -eq $false -and $AllProgramsMW -eq $false -and $ProgramsMW -eq $false)
+			{
+				try
+				{
+					Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available MAINTENANCE WINDOW OF ANY TYPE"
+					$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 2 -or $_.Type -eq 1 -or $_.Type -eq 4 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+					$Message = "Next available MAINTEANNCE window of any type for $ComputerName is " + $Window
+					$Message
+				}
+				catch
+				{
+					throw "An Error has occured retriving window information"
+				}
+			}
+		}
+	}
+	else
+	{
+		if ($AllProgramsMW)
+		{
+			try
+			{
+				Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available ALL PROGRAMS MAINTENANCE WINDOW"
+				$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 1 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+				$Message = "Next available ALL PROGRAMS window for $ComputerName is " + $Window
+				$Message
+			}
+			catch
+			{
+				throw "An Error has occured retriving window information"
+			}
+		}
+		if ($SoftwareMW)
+		{
+			try
+			{
+				Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available SOFTWARE UPDATES MAINTENANCE WINDOW"
+				$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 4 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+				$Message = "Next available SOFTWARE UPDATES MAINTENANCE window for $ComputerName is " + $Window
+				$Message
+			}
+			catch
+			{
+				throw "An Error has occured retriving window information"
+			}
+		}
+		if ($ProgramsMW)
+		{
+			try
+			{
+				Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available PROGRAMS MAINTENANCE WINDOW"
+				$window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 2 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+				$Message = "Next available PROGRAMS MAINTENANCE window for $ComputerName is " + $Window
+				$Message
+			}
+			catch
+			{
+				throw "An Error has occured retriving window information"
+			}
+		}
+		if ($SoftwareMW -eq $false -and $AllProgramsMW -eq $false -and $ProgramsMW -eq $false)
+		{
+			try
+			{
+				Write-Verbose -Message "Attempting to connect to $ComputerName and retrieve next available MAINTENANCE WINDOW OF ANY TYPE"
+				$Window = Get-WmiObject -ComputerName $ComputerName -Namespace root\ccm\clientsdk -ClassName CCM_ServiceWindow | Where-Object{ $_.type -eq 2 -or $_.Type -eq 1 -or $_.Type -eq 4 } | ForEach-Object{ [Management.ManagementDateTimeConverter]::ToDateTime($_.StartTime) } | Sort $_.StartTime | Select-Object -First 1
+				$Message = "Next available MAINTEANNCE window of any type for $ComputerName is " + $Window
+				$Message
+			}
+			catch
+			{
+				throw "An Error has occured retriving window information"
+			}
+		}
+	}
+}
+
+function Get-LastSoftwareUpdateScan
+{
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory = $true)]
+		[string]$ComputerName,
+		[Parameter(Mandatory = $False)]
+		[switch]$ConnectionTest
+	)
+	if ($ConnectionTest)
+	{
+		if (Test-Connectivity -ComputerName $ComputerName)
+		{
+			try
+			{
+				Write-Verbose -Message "Attempting to gather Last Scanned WSUS Server name and time"
+				$LastScanTime = Get-WmiObject -ComputerName $ComputerName -Namespace "Root\ccm\SCanAgent" -ClassName CCM_ScanUpdateSourceHistory | ForEach-Object { [Management.ManagementDateTimeConverter]::ToDateTime($_.LastCompletionTime) }
+				$LastServerScanned = Get-WmiObject -computer $ComputerName -Namespace root\ccm\softwareupdates\wuahandler -Class CCM_updatesource | Select-Object ContentLocation
+				$Message = "Your computer $Computername last scanned at " + $LastScanTime + " against the server " + $LastServerScanned.ContentLocation
+				$Message
+			}
+			catch
+			{
+				throw "Something went wrong collecting the Software Update Scan Time"
+			}
+		}
+	}
+	else
+	{
+		try
+		{
+			Write-Verbose -Message "Attempting to gather Last Scanned WSUS Server name and time"
+			$LastScanTime = Get-WmiObject -ComputerName $ComputerName -Namespace "Root\ccm\SCanAgent" -ClassName CCM_ScanUpdateSourceHistory | ForEach-Object { [Management.ManagementDateTimeConverter]::ToDateTime($_.LastCompletionTime) }
+			$LastServerScanned = Get-WmiObject -computer $ComputerName -Namespace root\ccm\softwareupdates\wuahandler -Class CCM_updatesource | Select-Object ContentLocation
+			$Message = "Your computer $Computername last scanned at " + $LastScanTime + " against the server " + $LastServerScanned.ContentLocation
+			$Message
+		}
+		catch
+		{
+			throw "Something went wrong collecting the Software Update Scan Time"
+		}
+	}
+}
+
 
 ############################################
 function Test-Connectivity
