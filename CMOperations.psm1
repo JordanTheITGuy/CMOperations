@@ -31,7 +31,7 @@ function Start-SoftwareUpdateScan
 		{
 			try
 			{
-				Start-ActionSoftwareUpdateScan -ComputerName $ComputerName
+				Start-ActionSoftwareUpdateScan -ComputerName $ComputerName -ErrorAction Stop
 			}
 			Catch
 			{
@@ -63,7 +63,9 @@ function Start-HardwareInventoryScan
 		[Parameter(Mandatory = $true)]
 		[string]$ComputerName,
 		[Parameter(Mandatory = $False)]
-		[switch]$ConnectionTest
+		[switch]$ConnectionTest,
+		[Paramater(Mandatory = $false)]
+		[switch]$ForceReset
 	)
 	if ($ConnectionTest)
 	#If the connection test switch is set start the process to test the network connectivity and run the function. 
@@ -71,28 +73,63 @@ function Start-HardwareInventoryScan
 		if (Test-Connectivity -ComputerName $ComputerName)
 		#Validates that the machine can be conneted to. If it passes will enter the try statement to start a Hardware Inventory Scan
 		{
-			try
+			if ($ForceReset)
 			{
-				Start-ActionHardwareInventoryScan -ComputerName $ComputerName
+				try
+				{
+					Start-ActionResetHardwareInventory -ComputerName $ComputerName -ErrorAction Stop
+					Start-ActionHardwareInventoryScan -ComputerName $ComputerName -ErrorAction Stop
+				}
+				Catch
+				{
+					throw "$ComputerName failed to clear the hardware inventory and start hardware inventory cycle"
+					#Catch and throw an error statement if anything goes wrong. 
+				}
 			}
-			Catch
+			else
 			{
-				throw "$ComputerName failed to start hardware inventory cycle"
-				#Catch and throw an error statement if anything goes wrong. 
+				try
+				{
+					Start-ActionHardwareInventoryScan -ComputerName $ComputerName -ErrorAction Stop
+				}
+				Catch
+				{
+					throw "$ComputerName failed to start a hardware inventory cycle"
+					#Catch and throw an error statement if anything goes wrong. 
+				}
 			}
 		}
 	}
 	else
 	#In the event a connection test is NOT requested - attempt to perform the action without triggering a connection test. Not reccomended.
 	{
-		try
+		if ($ForceReset)
 		{
-			Start-ActionHardwareInventoryScan -ComputerName $ComputerName
+			try
+			{
+				Start-ActionResetHardwareInventory -ComputerName $ComputerName -ErrorAction Stop
+				#Runs the action to reset the hardware inventory
+				Start-ActionHardwareInventoryScan -ComputerName $ComputerName -ErrorAction Stop
+				#Runs the action to start a hardware inventory scan.
+			}
+			Catch
+			{
+				throw "$ComputerName failed to clear the hardware inventory and start hardware inventory cycle"
+				#Catch and throw an error statement if anything goes wrong. 
+			}
 		}
-		Catch
+		else
 		{
-			throw "$ComputerName failed to start a hardware inventory cycle"
-			#Catch and throw an error statement if anything goes wrong. 
+			try
+			{
+				Start-ActionHardwareInventoryScan -ComputerName $ComputerName -ErrorAction Stop
+				#Runs the action to start collecting hardware inventory infomration.
+			}
+			Catch
+			{
+				throw "$ComputerName failed to start a hardware inventory cycle"
+				#Catch and throw an error statement if anything goes wrong. 
+			}
 		}
 	}
 }
@@ -615,6 +652,20 @@ function Get-ActionLastHardwareScan
 	#Convert the instance information into a date time object and send the data back to the screen.
 	$LastHWRun
 }
+
+function Start-ActionResetHardwareInventory
+{
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory = $true)]
+		[string]$ComputerName
+	)
+	Write-Verbose -Message "Attemptiong to remove the action status for Hardware Inventory this will force a FULL Hardware Inventory"
+	Get-WmiObject -computername $ComputerName -Namespace "root\ccm\invagt" -Class InventoryActionStatus -ErrorAction Stop | where { $_.InventoryActionID -eq "{00000000-0000-0000-0000-000000000001}" } | Remove-WmiObject
+	#Gets the WMI Instance for the last action status and then deletes it.
+	Write-Verbose -Message "Removed the last Action Status for Hardware Scan"
+}
 #endregion ActionFunctions
 ############################################
 
@@ -712,5 +763,3 @@ function Test-WinRM
 }
 #endregion HelperFunctions
 ############################################
-
-
