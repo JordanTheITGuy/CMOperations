@@ -64,7 +64,7 @@ function Start-HardwareInventoryScan
 		[string]$ComputerName,
 		[Parameter(Mandatory = $False)]
 		[switch]$ConnectionTest,
-		[Paramater(Mandatory = $false)]
+		[Parameter(Mandatory = $false)]
 		[switch]$ForceReset
 	)
 	if ($ConnectionTest)
