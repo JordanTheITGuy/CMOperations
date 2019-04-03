@@ -1,10 +1,12 @@
 ﻿<#	
 	===========================================================================
-	 Created with: 	SAPIEN Technologies, Inc., PowerShell Studio 2017 v5.4.144
+	 Created with: 	VSCode
 	 Created on:   	2/23/2018 11:13 AM
+	 Updated on: 	8/22/2018 10:34 AM
 	 Created by:   	Jordan Benzing
-	 Organization: 	Problem Resolution
+	 Organization: 	SCConfigMgr
 	 Filename:     	CMOperations.psm1
+	 Version: 		1.0.0.6
 	-------------------------------------------------------------------------
 	 Module Name: CMOperations
 	===========================================================================

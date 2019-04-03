@@ -18,7 +18,7 @@
 	ModuleToProcess = 'CMOperations.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.1.1'
+	ModuleVersion = '1.0.0.4'
 	
 	# ID used to uniquely identify this module
 	GUID = '8911e550-c0cb-4542-a5c9-07915bdfa47a'
