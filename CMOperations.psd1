@@ -1,16 +1,26 @@
 ﻿<#	
-	===========================================================================
-	 Created with: 	SAPIEN Technologies, Inc., PowerShell Studio 2017 v5.4.144
-	 Created on:   	2/23/2018 11:13 AM
-	 Created by:   	Jordan Benzing
-	 Filename:     	CMOperations.psd1
-	 -------------------------------------------------------------------------
-	 Module Manifest
-	-------------------------------------------------------------------------
-	 Module Name: CMOperations
-	===========================================================================
-#>
+.SYNOPSIS
+	Configuration Manager Module file for basic configuration manager operations and commands. This includes commands that interact both with the SCCM client
+	and commands that interact directly with the SMS Provider on the configuration Manager server.
 
+.DESCRIPTION
+	This module has been written over a year and a half and will continue to grow and expand as new pieces are added to it. 
+
+
+.EXAMPLE
+	import-module CMOperations
+
+.NOTES
+    FileName:    CMOperations.psd1
+    Author:      Jordan Benzing
+    Contact:     @JordanTheItGuy
+    Created:     2/23/2018
+    Updated:     8/22/2018
+
+    Version history:
+    1.0.0.6 - Updated to use new coding standard for myself
+
+#>
 
 @{
 	
@@ -75,7 +85,7 @@
 	FunctionsToExport = "Start-SoftwareUpdateScan","Start-HardwareInventoryScan","Get-LastHardwareScan","Get-UpdatesInSoftwareCenter","Install-UpdatesInSoftwareCenter","Get-NextAvailableMW","Get-LastSoftwareUpdateScan" #For performanace, list functions explicity
 	
 	# Cmdlets to export from this module
-	CmdletsToExport = '*' 
+	CmdletsToExport = ''
 	
 	# Variables to export from this module
 	VariablesToExport = '*'

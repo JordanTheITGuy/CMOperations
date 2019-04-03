@@ -1,15 +1,26 @@
 ﻿<#	
-	===========================================================================
-	 Created with: 	VSCode
-	 Created on:   	2/23/2018 11:13 AM
-	 Updated on: 	8/22/2018 10:34 AM
-	 Created by:   	Jordan Benzing
-	 Organization: 	SCConfigMgr
-	 Filename:     	CMOperations.psm1
-	 Version: 		1.0.0.6
-	-------------------------------------------------------------------------
-	 Module Name: CMOperations
-	===========================================================================
+.SYNOPSIS
+	Configuration Manager Module for basic configuration manager operations and commands. This includes commands that interact both with the SCCM client
+	and commands that interact directly with the SMS Provider on the configuration Manager server.
+
+.DESCRIPTION
+	This module has been written over a year and a half and will continue to grow and expand as new pieces are added to it. 
+
+
+.EXAMPLE
+	import-module CMOperations
+
+.NOTES
+    FileName:    CMOperations.psm1
+    Author:      Jordan Benzing
+    Contact:     @JordanTheItGuy
+    Created:     2/23/2018
+    Updated:     8/22/2018
+
+    Version history:
+	1.0.0.6 - Updated to use new coding standard for myself
+	1.0.0.7 - Updated with additional helper functions from other areas
+
 #>
 
 ############################################
@@ -136,6 +147,7 @@ function Start-HardwareInventoryScan
 	}
 }
 
+
 #endregion TriggerClientActions
 ############################################
 
@@ -183,6 +195,7 @@ function Get-UpdatesInSoftwareCenter
 
 function Install-UpdatesInSoftwareCenter
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[String]$ComputerName,
@@ -763,5 +776,129 @@ function Test-WinRM
 		throw [System.IO.DriveNotFoundException] "$ComputerName cannot be connected to via WINRM"
 	}
 }
+
+function Get-CMModule
+#This application gets the configMgr module
+{
+    [CmdletBinding()]
+    param()
+    Try
+    {
+        Write-Verbose "Attempting to import SCCM Module"
+        #Retrieves the fcnction from ConfigMgr installation path. 
+        Import-Module (Join-Path $(Split-Path $ENV:SMS_ADMIN_UI_PATH) ConfigurationManager.psd1) -Verbose:$false
+        Write-Verbose "Succesfully imported the SCCM Module"
+    }
+    Catch
+    {
+        Throw "Failure to import SCCM Cmdlets."
+    } 
+}
+
+function Test-ConfigMgrAvailable
+#Tests if ConfigMgr is availble so that the SMSProvider and configmgr cmdlets can help. 
+{
+    [CMdletbinding()]
+    Param
+    (
+        [Parameter(Mandatory = $false)]
+        [bool]$Remediate
+    )
+        try
+        {
+            if((Test-Module -ModuleName ConfigurationManager -Remediate:$true) -eq $false)
+            #Checks to see if the Configuration Manager module is loaded or not and then since the remediate flag is set automatically imports it.
+            { 
+                throw "You have not loaded the configuration manager module please load the appropriate module and try again."
+                #Throws this error if even after the remediation or if the remediation fails. 
+            }
+            write-Verbose "ConfigurationManager Module is loaded"
+            Write-Verbose "Checking if current drive is a CMDrive"
+            if((Get-location).Path -ne (Get-location -PSProvider 'CmSite').Path)
+            #Checks if the current location is the - PS provider for the CMSite server. 
+            {
+                if($Remediate)
+                #If the remediation field is set then it attempts to set the current location of the path to the CMSite server path. 
+                    {
+                        Set-Location -Path (((Get-PSDrive -PSProvider CMSite).Name) + ":")
+                        #Sets the location properly to the PSDrive.
+                    }
+
+                else
+                {
+                    throw "You are not currently connected to a CMSite Provider Please Connect and try again"
+                }
+            }
+            write-Verbose "Succesfully validated connection to a CMProvider"
+            return $true
+        }
+        catch
+        {
+            $errorMessage = $_.Exception.Message
+            write-error -Exception CMPatching -Message $errorMessage
+            return $false
+        }
+}
+
+function Test-Module
+#Function that is designed to test a module if it is loaded or not. 
+{
+    [CMdletbinding()]
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [String]$ModuleName,
+        [Parameter(Mandatory = $false)]
+        [bool]$Remediate
+    )
+    If(Get-Module -Name $ModuleName)
+    #Checks if the module is currently loaded and if it is then return true.
+    {
+        Write-Verbose -Message "The module was already loaded return TRUE"
+        return $true
+    }
+    If((Get-Module -Name $ModuleName) -ne $true)
+    #Checks if the module is NOT loaded and if it's not loaded then check to see if remediation is requested. 
+    {
+        Write-Verbose -Message "The Module was not already loaded evaluate if remediation flag was set"
+        if($Remediate -eq $true)
+        #If the remediation flag is selected then attempt to import the module. 
+        {
+            try 
+            {
+                    if($ModuleName -eq "ConfigurationManager")
+                    #If the module requested is the Configuration Manager module use the below method to try to import the ConfigMGr Module.
+                    {
+                        Write-Verbose -Message "Non-Standard module requested run pre-written function"
+                        Get-CMModule
+                        #Runs the command to get the COnfigMgr module if its needed. 
+                        Write-Verbose -Message "Succesfully loaded the module"
+                        return $true
+                    }
+                    else
+                    {
+                    Write-Verbose -Message "Remediation flag WAS set now attempting to import module $($ModuleName)"
+                    Import-Module -Name $ModuleName
+                    #Import  the other module as needed - if they have no custom requirements.
+                    Write-Verbose -Message "Succesfully improted the module $ModuleName"
+                    Return $true
+                    }
+            }
+            catch 
+            {
+                Write-Error -Message "Failed to import the module $($ModuleName)"
+                Set-Location $StartingLocation
+                break
+            }
+        }
+        else {
+            #Else return the fact that it's not applicable and return false from the execution.
+            {
+                Return $false
+            }
+        }
+    }
+}
+
 #endregion HelperFunctions
 ############################################
