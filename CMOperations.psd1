@@ -82,7 +82,7 @@
 	NestedModules = @()
 	
 	# Functions to export from this module
-	FunctionsToExport = "Start-SoftwareUpdateScan","Start-HardwareInventoryScan","Get-LastHardwareScan","Get-UpdatesInSoftwareCenter","Install-UpdatesInSoftwareCenter","Get-NextAvailableMW","Get-LastSoftwareUpdateScan" #For performanace, list functions explicity
+	FunctionsToExport = "Start-SoftwareUpdateScan","Start-HardwareInventoryScan","Get-LastHardwareScan","Get-UpdatesInSoftwareCenter","Install-UpdatesInSoftwareCenter","Get-NextAvailableMW","Get-LastSoftwareUpdateScan","Get-CMOCollectionPath" #For performanace, list functions explicity
 	
 	# Cmdlets to export from this module
 	CmdletsToExport = ''
