@@ -20,7 +20,11 @@
     Version history:
 	1.0.0.6 - Updated to use new coding standard for myself
 	1.0.0.7 - Updated with additional helper functions from other areas
-
+	1.0.0.8 - Updated and added a new function that retrieves the CMCollection object path
+		TODO: - Add support for CollectionID
+		TODO: - Add support for no Site ServerName 
+		TODO: - Add support for using AD to determine SMS provider (Attempt to determine at least)
+		TODO: - Add support to return the entire object instead of just the object path?
 #>
 
 ############################################
@@ -149,6 +153,47 @@ function Start-HardwareInventoryScan
 
 
 #endregion TriggerClientActions
+############################################
+
+############################################
+#region TriggerProviderInteraction
+
+function Get-CMOCollectionPath{
+	[cmdletbinding()]
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$CollectionName,
+		[Parameter(Mandatory = $false)]
+		[string]$SiteServerName
+	)
+	if($SiteServerName){
+		try{
+			Write-Verbose -Message "Now starting WINRM test to remote server"
+			$WINRMTEST = Test-WinRM -ComputerName $SiteServerName -ErrorAction Stop
+			Write-Verbose -Message "WinRM Test passed"
+			Write-Verbose -Message "Now attempting to retrieve information"
+			$ObjectPath = Start-CMOCollectionPath -CollectionName $CollectionName -SiteServerName $SiteServerName -ErrorACtion Stop
+			Write-Verbose -Message "Succesfully retrieved information"
+			return $ObjectPath
+		}
+		catch{
+			Write-Error -Message "An error has occurred testing the WINRM provider to the specified site server $($_.Exception.Message)"
+		}
+	}
+	if(!($SiteServerName)){
+		try{
+			Start-CMOCollectionPath -CollectionName $CollectionName -SiteServerName $SiteServerName -ErrorACtion Stop
+		}
+		catch{
+			Write-Error -Message "An error occured using the local hosts WMI Provider $($_.Exception.Message)"
+		}
+	}		
+}
+
+
+
+
+#endregion TriggerProviderInteraction
 ############################################
 
 ############################################
@@ -513,8 +558,7 @@ function Get-LastHardwareScan
 #Fucntions within this region contain the actual action that is being performed. These functions are not listed in the manifest as they are hidden behind the wrapper call functions.
 
 #Action Function for starting a Software Update Scan
-function Start-ActionSoftwareUpdateScan
-{
+function Start-ActionSoftwareUpdateScan{
 	[CmdletBinding()]
 	param
 	(
@@ -529,8 +573,7 @@ function Start-ActionSoftwareUpdateScan
 }
 
 #Action function for starting a Hardware Inventory Scan Cycle
-function Start-ActionHardwareInventoryScan
-{
+function Start-ActionHardwareInventoryScan{
 	[CmdletBinding()]
 	param
 	(
@@ -545,8 +588,7 @@ function Start-ActionHardwareInventoryScan
 }
 
 #Action Function for getting the next available MW.
-function Get-ActionNextAvailableMW
-{
+function Get-ActionNextAvailableMW{
 	[CmdletBinding()]
 	param
 	(
@@ -632,8 +674,7 @@ function Get-ActionNextAvailableMW
 }
 
 #Action Function for getting the last time a software update Scan was performed and the server it was run against.
-function Get-ActionLastSoftwareUpdateScan
-{
+function Get-ActionLastSoftwareUpdateScan{
 	[CmdletBinding()]
 	param
 	(
@@ -651,8 +692,7 @@ function Get-ActionLastSoftwareUpdateScan
 }
 
 #Action Function for getting the last time a hardware San was run.
-function Get-ActionLastHardwareScan
-{
+function Get-ActionLastHardwareScan{
 	[CmdletBinding()]
 	param
 	(
@@ -668,8 +708,7 @@ function Get-ActionLastHardwareScan
 	$LastHWRun
 }
 
-function Start-ActionResetHardwareInventory
-{
+function Start-ActionResetHardwareInventory{
 	[CmdletBinding()]
 	param
 	(
@@ -681,6 +720,23 @@ function Start-ActionResetHardwareInventory
 	#Gets the WMI Instance for the last action status and then deletes it.
 	Write-Verbose -Message "Removed the last Action Status for Hardware Scan"
 }
+
+function Start-CMOCollectionPath{
+[CmdletBinding()]
+param(
+	[Parameter(Mandatory = $true)]
+	[string]$CollectionName,
+	[parameter(Mandatory = $false)]
+	[string]$SiteServerName
+	)
+	if($SiteServerName){
+		Write-Verbose -Message "Initializing command"
+		$CollectionObject = Invoke-Command -ComputerName $SiteServerName -ScriptBlock {$CollectionName = "$($CollectionName)";Get-WmiObject -Namespace "Root\sms\$((Get-WmiObject -namespace "root\sms" -class "__Namespace").Name)" -Query "select *from SMS_Collection where Name = '$($args[0])'"} -ArgumentList $CollectionName
+		return $CollectionObject.ObjectPath	
+	}
+
+}
+
 #endregion ActionFunctions
 ############################################
 
