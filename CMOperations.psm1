@@ -21,10 +21,10 @@
 	1.0.0.6 - Updated to use new coding standard for myself
 	1.0.0.7 - Updated with additional helper functions from other areas
 	1.0.0.8 - Updated and added a new function that retrieves the CMCollection object path
-		TODO: - Add support for CollectionID
-		TODO: - Add support for no Site ServerName 
-		TODO: - Add support for using AD to determine SMS provider (Attempt to determine at least)
-		TODO: - Add support to return the entire object instead of just the object path?
+		#TODO: - Add support for CollectionID
+		#TODO: - Add support for no Site ServerName 
+		#TODO: - Add support for using AD to determine SMS provider (Attempt to determine at least)
+		#TODO: - Add support to return the entire object instead of just the object path?
 #>
 
 ############################################
@@ -189,9 +189,6 @@ function Get-CMOCollectionPath{
 		}
 	}		
 }
-
-
-
 
 #endregion TriggerProviderInteraction
 ############################################
@@ -722,12 +719,14 @@ function Start-ActionResetHardwareInventory{
 }
 
 function Start-CMOCollectionPath{
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = "Non")]
 param(
-	[Parameter(Mandatory = $true)]
+	[Parameter(Mandatory = $true , ParameterSetName = "CollectionName",Position = 0)]
 	[string]$CollectionName,
-	[parameter(Mandatory = $false)]
-	[string]$SiteServerName
+	[parameter(Mandatory = $true)]
+	[string]$SiteServerName,
+	[Parameter(HelpMessage = $true , ParameterSetName = "CollectionID",Position = 0)]
+	[string]$CollectionID
 	)
 	if($SiteServerName){
 		Write-Verbose -Message "Initializing command"
